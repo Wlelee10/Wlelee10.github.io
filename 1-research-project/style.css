@@ -1,0 +1,17 @@
+body{text-align:center;
+    background-color:#fff3dafa; 
+    font-family:Arial, sans-serif}
+.Question{font-size: 1.25rem;color:rgb(15, 15, 16)}
+.Answer{font-size: 1rem;color:darkgreen}
+.card{border: borderWidth solid #d8d8d8;
+    border-radius:12px;
+    padding:25px;
+    margin:30px auto;
+    width:80%;
+    background:rgba(255, 255, 255, 0.735);}
+.cards {display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    width: 90%;
+    margin: 40px auto;}
+
