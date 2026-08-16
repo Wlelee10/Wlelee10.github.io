@@ -1,3 +1,22 @@
+/*
+    VISUAL DIRECTION
+
+    For the visual design of this research page, I wanted to keep a similar
+    visual feeling to the Frank Gehry website that I was researching rather
+    than making a completely separate design. I was especially interested in
+    its oversized typography, strong chapter colours, large amounts of empty
+    space and the way text and media are placed differently throughout the
+    page.
+
+    I used these characteristics as references for my own layout. The large
+    question numbers, changing background colours and asymmetrical positions
+    of the questions and answers are intended to make each section feel
+    visually different while still belonging to the same website. I did not
+    try to directly recreate the original site, but used its visual language
+    as a starting point for presenting my own research about the experience.
+*/
+
+
 /* basic page */
 
 * {
@@ -15,10 +34,12 @@ body {
     overflow-x: hidden;
 }
 
+
+
 /* first page */
 
 .page-header {
-width: 100%;
+    width: 100%;
     min-height: 100vh;
     position: relative;
     background-color: rgb(253, 248, 243);
@@ -130,6 +151,7 @@ main {
 .chapter-start {
     min-height: 100vh;
 }
+
 
 
 /* chapter colours */
@@ -400,6 +422,7 @@ main {
 
 
 /* moved this a few times until it looked right */
+
 .question-02 .timeline-answer {
     position: absolute;
 
@@ -781,8 +804,11 @@ main {
 
 /*
     smaller screen
-    I added this because some of the long questions
-    started touching the answers when the window got smaller
+
+    I added this because some of the longer questions and answers started
+    touching each other when the browser became narrower. I kept the same
+    general composition but slightly changed widths, positions and type sizes
+    so the desktop design could still be recognised on smaller screens.
 */
 
 @media (max-width: 950px) {
@@ -802,6 +828,7 @@ main {
 
 
     /* 01 */
+
     .question-01 .question-box {
         width: 58%;
     }
@@ -814,6 +841,7 @@ main {
 
 
     /* 02 */
+
     .question-02 {
         min-height: 95vh;
     }
@@ -834,6 +862,7 @@ main {
 
 
     /* 03 */
+
     .question-03 .question-box {
         left: 32%;
         width: 63%;
@@ -846,6 +875,7 @@ main {
 
 
     /* 04 */
+
     .question-04 {
         min-height: 90vh;
         height: 90vh;
@@ -866,6 +896,7 @@ main {
 
 
     /* 05 */
+
     .question-05 .question-box {
         left: 32%;
         width: 64%;
@@ -879,6 +910,7 @@ main {
 
 
     /* 06 */
+
     .question-06 .question-box {
         width: 55%;
     }
@@ -891,6 +923,7 @@ main {
 
 
     /* 07 */
+
     .question-07 {
         min-height: 95vh;
         height: 95vh;
@@ -913,6 +946,7 @@ main {
 
 
     /* 08 */
+
     .question-08 {
         min-height: 95vh;
         height: 95vh;
@@ -934,6 +968,7 @@ main {
 
 
     /* 09 */
+
     .question-09 .question-box {
         left: 28%;
         width: 70%;
@@ -946,6 +981,7 @@ main {
 
 
     /* 10 */
+
     .question-10 {
         min-height: 95vh;
         height: 95vh;
@@ -966,6 +1002,7 @@ main {
 
 
     /* 11 */
+
     .question-11 .question-box {
         left: 35%;
         width: 63%;
@@ -978,6 +1015,7 @@ main {
 
 
     /* 12 */
+
     .question-12 .question-box {
         width: 66%;
     }
@@ -990,6 +1028,7 @@ main {
 
 
     /* 13 */
+
     .question-13 .question-box {
         left: 32%;
         width: 66%;
@@ -1013,8 +1052,11 @@ main {
 
 /*
     phone
-    absolute positions were getting too difficult to read
-    so I changed it to one column here
+
+    The absolute positioning used on the desktop version became difficult to
+    read on a phone because there was not enough horizontal space. Instead of
+    trying to keep the same positions, I changed the research sections into
+    one column so the questions, answers and media can be read in order.
 */
 
 @media (max-width: 700px) {
