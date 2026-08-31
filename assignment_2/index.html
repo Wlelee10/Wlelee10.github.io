@@ -1,0 +1,30 @@
+<html lang="en">
+  <head>
+    <title>Example Website</title>
+    <style> 
+        .redThings { color: red; } 
+        .blueThings { color: blue; }
+    </style>
+  </head>
+
+  <body>
+    <h1 id="mainHeading" class="redThings">Welcome to My Example Website</h1>
+  </body>
+
+  <script>
+    const heading = document.createElement ("h1")
+    heading.innerText = "This is the new heading! 🚀"
+
+    const boomerang = document.getElementById ("boomerang")
+    document.body.insertBefore (heading, boomerang)
+
+    function addSubHeading () {
+        const subHeading = document.createElement ("h2")
+        subHeading.innerText = "This is a subheading! 🌟"
+        document.body.insertBefore (subHeading, boomerang)
+    }
+
+    document.body.onpointerdown = addSubHeading
+</script>
+
+</html>
