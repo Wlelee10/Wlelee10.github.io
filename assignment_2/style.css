@@ -1,0 +1,640 @@
+/*
+  Visual direction
+
+  I wanted the music player to immediately feel connected to vinyl records.
+  Since the four tracks are part of one album, I tried to keep the interface
+  as one continuous composition rather than designing four separate pages.
+
+  I chose one main colour for each track based on how I interpreted the music.
+  Red feels heavy and intense for Hes, blue feels fast and restless for Dry Down,
+  purple feels dreamlike for Leapt, and mint feels softer and more fluid for
+  Water Feature.
+
+  I used these colours for the record artwork, covers, background and aura so
+  the visual changes still feel connected to the same album.
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  overflow: hidden;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #031819;
+  color: white;
+}
+
+button {
+  font: inherit;
+}
+
+.player {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  min-height: 650px;
+  overflow: hidden;
+}
+
+/* Background */
+.background-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  background: #0a0a0c;
+}
+
+.background-strip {
+  position: absolute;
+  top: -8%;
+  left: 0;
+  height: 116%;
+  will-change: transform;
+  transition: transform 760ms cubic-bezier(0.22, 1, 0.36, 1);
+  filter: blur(50px) saturate(2.1) brightness(2.15);
+  transform-origin: center;
+}
+
+.background-strip.no-transition {
+  transition: none !important;
+}
+
+.background-strip::after {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  background: radial-gradient( circle at 12% 30%, rgba(255, 255, 255, 0.05), transparent 30% ), radial-gradient( circle at 34% 72%, rgba(255, 255, 255, 0.03), transparent 32% ), radial-gradient( circle at 58% 28%, rgba(255, 255, 255, 0.045), transparent 35% ), radial-gradient( circle at 84% 68%, rgba(0, 0, 0, 0.06), transparent 30% );
+  filter: blur(52px);
+  opacity: 0.55;
+  mix-blend-mode: soft-light;
+}
+
+.background-viewport::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient( 180deg, rgba(3, 3, 4, 0.78), rgba(3, 3, 4, 0.82) );
+}
+
+.header {
+  position: absolute;
+  top: 2.5%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+}
+
+.header h1 {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: -0.03em;
+}
+
+/* Track description */
+
+.track-story {
+  position: absolute;
+  top: 15%;
+  right: 3%;
+  z-index: 25;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: clamp(150px, 26vw, 300px);
+}
+
+.track-story:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+
+.track-story-accent {
+  flex: 0 0 3px;
+  width: 3px;
+  align-self: stretch;
+  min-height: 60px;
+  border-radius: 2px;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: flex-basis 250ms ease, width 250ms ease, opacity 250ms ease;
+}
+
+.track-story:hover .track-story-accent, .track-story:focus-within .track-story-accent {
+  flex-basis: 10px;
+  width: 10px;
+  opacity: 1;
+}
+
+.track-story-text {
+  clip-path: inset(0 100% 0 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: clip-path 420ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease;
+}
+
+.track-story:hover .track-story-text, .track-story:focus-within .track-story-text {
+  clip-path: inset(0 0 0 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.track-story-title {
+  font-size: clamp( 0.82rem, 0.55rem + 1vw, 1.05rem );
+  font-weight: 500;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.track-story-body {
+  font-size: clamp( 0.7rem, 0.5rem + 0.7vw, 0.85rem );
+  line-height: 1.55;
+  color: rgba( 255, 255, 255, 0.62 );
+}
+
+/* Vinyl player */
+
+.vinyl-stage {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: min(58vw, 820px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  pointer-events: none;
+}
+
+.glass-disc-outer {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 82%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  pointer-events: none;
+}
+
+.glass-disc-inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 8;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+/* Audio aura */
+
+.aura-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.aura-stage.is-active {
+  opacity: 0.62;
+}
+
+.aura-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.aura-path {
+  mix-blend-mode: screen;
+  fill: url(#auraGradient);
+  fill-opacity: 0.7;
+  filter: blur(40px);
+}
+
+.records-container {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  z-index: 5;
+}
+
+.records-container.no-transition 
+/* Records */
+.record-shell {
+  transition: none !important;
+}
+
+.record-shell {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 72%;
+  aspect-ratio: 1;
+  transform-origin: center;
+  transition: transform 760ms cubic-bezier(0.22, 1, 0.36, 1), opacity 520ms ease;
+  will-change: transform, opacity;
+}
+
+.record-visual {
+  width: 100%;
+  height: 100%;
+  transform: rotate( var(--scrub-angle, 0deg) );
+  transition: transform 150ms ease-out;
+  transform-origin: center center;
+}
+
+.record-disc {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+  animation: vinylRotation 22s linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
+}
+
+.record-centre.is-playing .record-disc {
+  animation-play-state: running;
+}
+
+.record-reset .record-disc {
+  animation: none !important;
+  transform: rotate(0deg) !important;
+}
+
+.record-centre {
+  z-index: 6;
+  opacity: 1;
+  transform: translate(-50%, -50%) translate(0%, 0%) scale(1) rotate(0deg);
+}
+
+.record-left {
+  z-index: 4;
+  opacity: 1;
+  transform: translate(-50%, -50%) translate(-142%, 30%) scale(0.86) rotate(-14deg);
+}
+
+.record-right {
+  z-index: 4;
+  opacity: 1;
+  transform: translate(-50%, -50%) translate(142%, 26%) scale(0.86) rotate(14deg);
+}
+
+.record-hidden-left {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translate(-205%, 42%) scale(0.68) rotate(-18deg);
+}
+
+.record-hidden-right {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translate(205%, 38%) scale(0.68) rotate(18deg);
+}
+
+@keyframes vinylRotation {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 37%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  border-radius: 50%;
+  background: rgba(14, 16, 17, 0.75);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+}
+
+.control-buttons {
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 21px;
+}
+
+.control-button, .play-button {
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.control-button {
+  width: 34px;
+  height: 34px;
+  background: transparent;
+  opacity: 0.72;
+}
+
+.play-button {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+}
+
+.control-button:hover, .play-button:hover {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.play-icon {
+  width: 0;
+  height: 0;
+  margin-left: 3px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 11px solid white;
+}
+
+.pause-icon {
+  width: 14px;
+  height: 15px;
+  border-left: 5px solid white;
+  border-right: 5px solid white;
+}
+
+.previous-icon {
+  position: relative;
+  width: 17px;
+  height: 18px;
+}
+
+.previous-icon::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 8px solid white;
+}
+
+.previous-icon::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 3px;
+  width: 2px;
+  height: 12px;
+  background: white;
+}
+
+.next-icon {
+  position: relative;
+  width: 17px;
+  height: 18px;
+}
+
+.next-icon::before {
+  content: "";
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 8px solid white;
+}
+
+.next-icon::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  top: 3px;
+  width: 2px;
+  height: 12px;
+  background: white;
+}
+
+.timeline-row {
+  position: absolute;
+  left: 50%;
+  top: 59%;
+  width: 74%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.progress-container {
+  position: relative;
+  flex: 1;
+  height: 18px;
+  cursor: ew-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.progress-container.is-dragging {
+  cursor: grabbing;
+}
+
+.progress-track {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 5px;
+  transform: translateY(-50%);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  overflow: hidden;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.time-display {
+  flex: 0 0 auto;
+  min-width: 38px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.78);
+  white-space: nowrap;
+  transform: translate(5px, 2px);
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 180ms ease;
+}
+
+.time-display:hover {
+  opacity: 0.7;
+}
+
+/* Track list */
+.track-list {
+  position: absolute;
+  left: calc( 50% + min(22vw, 315px) );
+  top: 77%;
+  z-index: 30;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.track-names {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.track-cover {
+  width: 84px;
+  height: 84px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  transition: opacity 300ms ease;
+}
+
+.track-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: rgba(255, 255, 255, 0.46);
+  font-size: clamp(12px, 0.95vw, 15px);
+  cursor: pointer;
+  transition: color 250ms ease, transform 250ms ease;
+}
+
+.track-button:hover {
+  color: rgba(255, 255, 255, 0.80);
+}
+
+.track-button.active {
+  color: white;
+  transform: translateX(2px);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .vinyl-stage {
+    width: 82vw;
+  }
+
+  .record-left {
+    transform: translate(-50%, -50%) translate(-122%, 32%) scale(0.78) rotate(-13deg);
+  }
+
+  .record-right {
+    transform: translate(-50%, -50%) translate(122%, 30%) scale(0.78) rotate(13deg);
+  }
+
+  .track-list {
+    left: auto;
+    right: 6%;
+  }
+
+  .track-story {
+    top: 12%;
+  }
+
+}
+
+@media (max-width: 600px) {
+  .vinyl-stage {
+    width: 96vw;
+    top: 43%;
+  }
+
+  .header {
+    top: 3%;
+  }
+
+  .track-list {
+    left: 50%;
+    right: auto;
+    top: 77%;
+    flex-direction: column;
+    transform: translateX(-50%);
+    align-items: center;
+  }
+
+  .track-cover {
+    width: 64px;
+    height: 64px;
+  }
+
+  .track-button {
+    text-align: center;
+  }
+
+  .track-story {
+    top: 4%;
+    right: 4%;
+    gap: 10px;
+    max-width: clamp(120px, 34vw, 220px);
+  }
+
+  .track-story-accent {
+    min-height: 44px;
+  }
+
+  .record-left {
+    transform: translate(-50%, -50%) translate(-102%, 38%) scale(0.72) rotate(-12deg);
+  }
+
+  .record-right {
+    transform: translate(-50%, -50%) translate(102%, 36%) scale(0.72) rotate(12deg);
+  }
+
+}

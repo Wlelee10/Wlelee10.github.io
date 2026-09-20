@@ -1,30 +1,308 @@
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Example Website</title>
-    <style> 
-        .redThings { color: red; } 
-        .blueThings { color: blue; }
-    </style>
-  </head>
 
-  <body>
-    <h1 id="mainHeading" class="redThings">Welcome to My Example Website</h1>
-  </body>
+<!--
+  DEVELOPMENT PROCESS / AI USE
 
-  <script>
-    const heading = document.createElement ("h1")
-    heading.innerText = "This is the new heading! 🚀"
+  I designed the overall layout, visual direction and interactions for this
+  music player myself. I built and tested the website while developing the
+  different interactions, and used ChatGPT as a supporting tool when I got
+  stuck on some parts of the coding or needed help understanding how to make
+  an interaction work.
 
-    const boomerang = document.getElementById ("boomerang")
-    document.body.insertBefore (heading, boomerang)
+  I continued adjusting the layout, animation values and visual effects by
+  testing them in the browser. I also used ChatGPT to help me organise and
+  clean up the final HTML, CSS and JavaScript after the main website was built.
 
-    function addSubHeading () {
-        const subHeading = document.createElement ("h2")
-        subHeading.innerText = "This is a subheading! 🌟"
-        document.body.insertBefore (subHeading, boomerang)
-    }
+  The track cover artwork and visual identity were created by me in Adobe
+  Illustrator. The browser title icon is also based on the track artwork
+  I created for this project.
+-->
 
-    document.body.onpointerdown = addSubHeading
-</script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>P-HASE</title>
+
+  <link rel="icon" type="image/png" href="images/WebTitleIcon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+
+<body>
+
+  <main class="player" id="player">
+
+
+    <!--
+      I wanted the background to change together with the tracks instead of
+      changing to completely separate pages. This helps the four songs feel
+      like they belong to the same album while each one still has its own colour.
+    -->
+
+    <div class="background-viewport">
+      <div class="background-strip" id="backgroundStrip"></div>
+    </div>
+
+
+    <header class="header">
+      <h1>P-HASE</h1>
+    </header>
+
+
+    <!--
+      I kept the track description hidden most of the time because I wanted
+      the main interface to stay minimal. Hovering over the small colour
+      indicator reveals the short interpretation I wrote for each track.
+    -->
+
+    <section
+      class="track-story"
+      id="trackStory"
+      tabindex="0"
+      aria-label="Current track description — hover or focus to reveal"
+      aria-live="polite"
+    >
+
+      <div
+        class="track-story-accent"
+        id="trackStoryAccent"
+        aria-hidden="true"
+      ></div>
+
+      <div class="track-story-text">
+
+        <h2
+          class="track-story-title"
+          id="trackStoryTitle"
+        ></h2>
+
+        <p
+          class="track-story-body"
+          id="trackStoryBody"
+        ></p>
+
+      </div>
+
+    </section>
+
+
+    <!--
+      The main player is based on the shape of an LP record. I used several
+      circular layers so the record, glass surfaces and audio-reactive aura
+      can overlap in the centre of the page.
+    -->
+
+    <section class="vinyl-stage">
+
+
+      <!-- back glass layer -->
+
+      <div class="glass-disc glass-disc-outer"></div>
+
+
+      <!--
+        The aura changes with the music while a track is playing.
+        The SVG shape and colours are controlled through JavaScript.
+      -->
+
+      <div
+        class="aura-stage"
+        id="auraStage"
+      >
+
+        <svg
+          class="aura-svg"
+          viewBox="0 0 400 400"
+          aria-hidden="true"
+        >
+
+          <defs>
+
+            <radialGradient
+              id="auraGradient"
+              gradientUnits="userSpaceOnUse"
+              cx="200"
+              cy="200"
+              r="260"
+            >
+
+              <stop
+                offset="0%"
+                stop-color="#000000"
+                stop-opacity="0"
+              ></stop>
+
+              <stop
+                id="auraStopNear"
+                offset="25%"
+                stop-opacity="0.14"
+              ></stop>
+
+              <stop
+                id="auraStopPeak"
+                offset="46%"
+                stop-opacity="1"
+              ></stop>
+
+              <stop
+                id="auraStopFar"
+                offset="75%"
+                stop-opacity="0.28"
+              ></stop>
+
+              <stop
+                offset="100%"
+                stop-color="#000000"
+                stop-opacity="0"
+              ></stop>
+
+            </radialGradient>
+
+          </defs>
+
+          <path
+            id="auraPath"
+            class="aura-path"
+            fill-rule="evenodd"
+          ></path>
+
+        </svg>
+
+      </div>
+
+
+      <!-- the four LP images are added here with JavaScript -->
+
+      <div
+        class="records-container"
+        id="recordsContainer"
+      ></div>
+
+
+      <!-- front glass layer -->
+
+      <div class="glass-disc glass-disc-inner"></div>
+
+
+      <!-- music controls -->
+
+      <div class="controls">
+
+        <div class="control-buttons">
+
+          <button
+            id="previousButton"
+            class="control-button"
+            aria-label="Previous track"
+          >
+            <span class="previous-icon"></span>
+          </button>
+
+
+          <button
+            id="playButton"
+            class="play-button"
+            aria-label="Play"
+          >
+            <span
+              id="playIcon"
+              class="play-icon"
+            ></span>
+          </button>
+
+
+          <button
+            id="nextButton"
+            class="control-button"
+            aria-label="Next track"
+          >
+            <span class="next-icon"></span>
+          </button>
+
+        </div>
+
+
+        <!--
+          The timeline can also be dragged to move through the track.
+          I added the time beside it so the user can switch between
+          elapsed and remaining time.
+        -->
+
+        <div class="timeline-row">
+
+          <div
+            class="progress-container"
+            id="progressContainer"
+            aria-label="Track progress"
+          >
+
+            <div class="progress-track">
+
+              <div
+                class="progress-fill"
+                id="progressFill"
+              ></div>
+
+            </div>
+
+          </div>
+
+
+          <span
+            id="timeDisplay"
+            class="time-display"
+            role="button"
+            tabindex="0"
+            aria-label="Toggle elapsed and remaining time"
+          >-0:00</span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!--
+      The track list stays visible beside the player so all four songs can
+      still be read as one album. The small artwork changes to match the
+      currently selected track.
+    -->
+
+    <nav
+      class="track-list"
+      id="trackList"
+      aria-label="Track list"
+    >
+
+      <div
+        class="track-names"
+        id="trackNames"
+      ></div>
+
+      <img
+        class="track-cover"
+        id="trackCover"
+        alt=""
+      >
+
+    </nav>
+
+
+    <!-- audio source is changed through JavaScript -->
+
+    <audio
+      id="audioPlayer"
+      preload="metadata"
+    ></audio>
+
+  </main>
+
+
+  <script src="script.js"></script>
+
+</body>
 
 </html>
