@@ -23,7 +23,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>P-HASE MUSIC ALBUM</title>
+  <title>P-HASE</title>
 
   <link rel="icon" type="image/png" href="images/WebTitleIcon.png">
   <link rel="stylesheet" href="style.css">
@@ -49,6 +49,37 @@
     <header class="header">
       <h1>P-HASE</h1>
     </header>
+
+
+    <!--
+      I added a small liked-tracks panel in the top-left corner.
+      Once a track is liked, hovering or focusing the panel reveals
+      the saved tracks so the user can quickly return to them.
+    -->
+
+    <section
+      class="preferences-panel"
+      id="preferencesPanel"
+      aria-label="Liked tracks"
+    >
+
+      <svg
+        class="pref-heart-icon"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+      >
+        <path
+          fill="currentColor"
+          d="M12 21s-7.6-4.35-10.2-9.1C.4 8.9 1.9 5.4 5.6 5c2.2-.25 3.9.95 4.9 2.5C11.4 6 13.1 4.8 15.3 5c3.6.4 5.2 3.9 3.8 6.9C16.6 16.65 12 21 12 21z"
+        ></path>
+      </svg>
+
+      <div
+        class="preferences-list"
+        id="preferencesList"
+      ></div>
+
+    </section>
 
 
     <!--
@@ -160,12 +191,27 @@
 
             </radialGradient>
 
+            <!--
+              I moved the aura blur into the SVG filter after testing
+              the effect in different browsers so it stayed more consistent.
+            -->
+            <filter
+              id="auraBlur"
+              x="-60%"
+              y="-60%"
+              width="220%"
+              height="220%"
+            >
+              <feGaussianBlur stdDeviation="20"></feGaussianBlur>
+            </filter>
+
           </defs>
 
           <path
             id="auraPath"
             class="aura-path"
             fill-rule="evenodd"
+            filter="url(#auraBlur)"
           ></path>
 
         </svg>
@@ -260,9 +306,8 @@
 
 
           <!--
-            I added a simple volume control to keep the player interface minimal.
-            The slider stays hidden until the volume icon is hovered or focused,
-            then it appears above the icon.
+            I kept the volume control small so it would not crowd the player.
+            The slider appears above the icon when it is hovered or focused.
           -->
 
           <div class="volume-control" id="volumeControl">

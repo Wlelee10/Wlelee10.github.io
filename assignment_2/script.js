@@ -1,14 +1,15 @@
 /*
   The four tracks are part of the same album, so I wanted the records
-  to feel like they are continuously moving around the same player
-  rather than loading a completely different page for each track.
+  to move around one continuous player instead of loading a separate
+  page for each song.
 
-  I also wanted to keep the interface minimal, so the description for
-  each song is hidden until the user hovers over the colour indicator.
+  I kept the interface minimal by hiding the track description until
+  the colour indicator is hovered or focused. I also added a small
+  liked-tracks panel so tracks can be saved without leaving the player.
 
-  The aura uses the audio frequency data to react to the music.
-  I adjusted some values for individual tracks because their rhythms
-  produced very different amounts of movement.
+  The aura uses audio frequency data to react to the music. I adjusted
+  some values for individual tracks because each song produced a
+  different amount of movement.
 */
 
 
@@ -23,12 +24,11 @@ const tracks = [
     mood: "Feeling of Red Judgment",
     description: "The deep red feels like a trial in hell, intense and heavy, filled with pressure and a sense that judgment is unavoidable.",
     backgroundColour: "#1e0303",
-    auraColour: "#ff3c3c",
-    reactivity: 1.8,
-    highlightPunch: 1.9,
+    auraColour: "#b62828",
+    reactivity: 3,
+    highlightPunch: 2.4,
     audio: "https://thelongesthumstore.sgp1.cdn.digitaloceanspaces.com/IM-2250/p-hase_Hes.mp3"
   },
-
   {
     number: "02",
     title: "Dry Down",
@@ -41,7 +41,6 @@ const tracks = [
     auraColour: "#22c2e0",
     audio: "https://thelongesthumstore.sgp1.cdn.digitaloceanspaces.com/IM-2250/p-hase_Dry-Down-feat-Ben-Snaath.mp3"
   },
-
   {
     number: "03",
     title: "Leapt",
@@ -53,7 +52,6 @@ const tracks = [
     auraColour: "#a855f7",
     audio: "https://thelongesthumstore.sgp1.cdn.digitaloceanspaces.com/IM-2250/p-hase_Leapt.mp3"
   },
-
   {
     number: "04",
     title: "Water Feature",
@@ -84,14 +82,7 @@ const trackStoryBody = document.querySelector("#trackStoryBody");
 
 const audioPlayer = document.querySelector("#audioPlayer");
 
-// Set once, up front, before this element's src is ever loaded.
-// Changing crossOrigin AFTER a load has already started makes the
-// browser abandon that load and refetch from scratch — which is
-// exactly what was happening when this got set lazily inside
-// setupAudioAnalyser() on first play: the audio would already be
-// loading (or just started playing) by then, so flipping the
-// attribute silently restarted the fetch and playback never
-// actually began until the next track load did it "clean".
+// Set this before loading the audio so the analyser can read the track.
 audioPlayer.crossOrigin = "anonymous";
 
 const playButton = document.querySelector("#playButton");
@@ -112,15 +103,11 @@ const volumeSlider = document.querySelector("#volumeSlider");
 
 let currentTrack = 0;
 let visualTrack = 0;
-
 let isPlaying = false;
 let isTransitioning = false;
-
 let hiddenSide = "left";
-
 let isDraggingProgress = false;
 let lastScrubPercentage = null;
-
 let showElapsedTime = true;
 
 const scrubAngles = new Array(tracks.length).fill(0);
@@ -252,20 +239,119 @@ function updateRecordPositions() {
 }
 
 
+const HEART_PATH =
+  "M12 21s-7.6-4.35-10.2-9.1C.4 8.9 1.9 5.4 5.6 5c2.2-.25 3.9.95 4.9 2.5C11.4 6 13.1 4.8 15.3 5c3.6.4 5.2 3.9 3.8 6.9C16.6 16.65 12 21 12 21z";
+
+
+function createHeartIcon() {
+  const svg = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg"
+  );
+
+  svg.setAttribute("class", "heart-icon");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+
+  const path = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "path"
+  );
+
+  path.setAttribute("d", HEART_PATH);
+
+  svg.appendChild(path);
+
+  return svg;
+}
+
+
+// Liked tracks
+
+const likedTracks = new Set();
+
+
+function toggleLiked(index) {
+  if (likedTracks.has(index)) {
+    likedTracks.delete(index);
+  }
+
+  else {
+    likedTracks.add(index);
+  }
+
+  const heartButton =
+    document.querySelector(
+      `.track-heart[data-index="${index}"]`
+    );
+
+  if (heartButton) {
+    heartButton.classList.toggle(
+      "is-liked",
+      likedTracks.has(index)
+    );
+
+    heartButton.setAttribute(
+      "aria-pressed",
+      String(likedTracks.has(index))
+    );
+  }
+
+  updatePreferencesPanel();
+}
+
+
 function createTrackList() {
   trackNamesEl.innerHTML = "";
 
   tracks.forEach((track, index) => {
+    const row = document.createElement("div");
+    row.className = "track-row";
+
+    const heartButton = document.createElement("button");
+    heartButton.className = "track-heart";
+    heartButton.dataset.index = index;
+
+    heartButton.setAttribute(
+      "aria-label",
+      `Like ${track.title}`
+    );
+
+    heartButton.setAttribute(
+      "aria-pressed",
+      "false"
+    );
+
+    heartButton.appendChild(
+      createHeartIcon()
+    );
+
+    heartButton.addEventListener(
+      "click",
+      event => {
+        // Keep the heart button separate from track selection.
+        event.stopPropagation();
+
+        toggleLiked(index);
+      }
+    );
+
     const button = document.createElement("button");
 
     button.className = "track-button";
     button.textContent = `${track.number} ${track.title}`;
 
-    button.addEventListener("click", () => {
-      selectTrack(index);
-    });
+    button.addEventListener(
+      "click",
+      () => {
+        selectTrack(index);
+      }
+    );
 
-    trackNamesEl.appendChild(button);
+    row.appendChild(heartButton);
+    row.appendChild(button);
+
+    trackNamesEl.appendChild(row);
   });
 }
 
@@ -285,10 +371,69 @@ function updateTrackList() {
   trackCoverImg.src = track.cover;
   trackCoverImg.alt = `${track.title} cover art`;
 
-  trackStoryAccent.style.backgroundColor = track.auraColour;
+  trackStoryAccent.style.backgroundColor =
+    track.auraColour;
 
-  trackStoryTitle.textContent = track.mood;
-  trackStoryBody.textContent = track.description;
+  trackStoryTitle.textContent =
+    track.mood;
+
+  trackStoryBody.textContent =
+    track.description;
+}
+
+
+// Liked tracks panel
+
+const preferencesPanel =
+  document.querySelector("#preferencesPanel");
+
+const preferencesList =
+  document.querySelector("#preferencesList");
+
+
+function updatePreferencesPanel() {
+  preferencesPanel.classList.toggle(
+    "has-liked",
+    likedTracks.size > 0
+  );
+
+  preferencesList.innerHTML = "";
+
+  // Keep liked tracks in the same 01–04 order.
+  tracks.forEach((track, index) => {
+    if (!likedTracks.has(index)) {
+      return;
+    }
+
+    const item = document.createElement("button");
+    item.className = "preferences-item";
+
+    item.setAttribute(
+      "aria-label",
+      `Play ${track.title}`
+    );
+
+    const cover = document.createElement("img");
+    cover.className = "preferences-item-cover";
+    cover.src = track.cover;
+    cover.alt = "";
+
+    const title = document.createElement("span");
+    title.className = "preferences-item-title";
+    title.textContent = track.title;
+
+    item.appendChild(cover);
+    item.appendChild(title);
+
+    item.addEventListener(
+      "click",
+      () => {
+        selectTrack(index);
+      }
+    );
+
+    preferencesList.appendChild(item);
+  });
 }
 
 
@@ -309,9 +454,13 @@ const mainColourHalfWidth = 24;
 
 function createBackgroundStrip() {
   const totalCells = backgroundSequence.length;
-  const totalWidth = totalCells * backgroundCellWidth;
 
-  backgroundStrip.style.width = `${totalWidth}vw`;
+  const totalWidth =
+    totalCells *
+    backgroundCellWidth;
+
+  backgroundStrip.style.width =
+    `${totalWidth}vw`;
 
   const stops = [];
 
@@ -320,16 +469,32 @@ function createBackgroundStrip() {
       (index * backgroundCellWidth) +
       (backgroundCellWidth / 2);
 
-    const startVW = centreVW - mainColourHalfWidth;
-    const endVW = centreVW + mainColourHalfWidth;
+    const startVW =
+      centreVW -
+      mainColourHalfWidth;
 
-    const startPercent = (startVW / totalWidth) * 100;
-    const endPercent = (endVW / totalWidth) * 100;
+    const endVW =
+      centreVW +
+      mainColourHalfWidth;
 
-    const colour = tracks[trackIndex].backgroundColour;
+    const startPercent =
+      (startVW / totalWidth) *
+      100;
 
-    stops.push(`${colour} ${startPercent}%`);
-    stops.push(`${colour} ${endPercent}%`);
+    const endPercent =
+      (endVW / totalWidth) *
+      100;
+
+    const colour =
+      tracks[trackIndex].backgroundColour;
+
+    stops.push(
+      `${colour} ${startPercent}%`
+    );
+
+    stops.push(
+      `${colour} ${endPercent}%`
+    );
   });
 
   backgroundStrip.style.background = `
@@ -343,14 +508,18 @@ function createBackgroundStrip() {
 
 function updateBackgroundTransform(animate = true) {
   if (!animate) {
-    backgroundStrip.classList.add("no-transition");
+    backgroundStrip.classList.add(
+      "no-transition"
+    );
   }
 
   const centrePosition =
     (backgroundCentreIndex * backgroundCellWidth) +
     (backgroundCellWidth / 2);
 
-  const translate = 50 - centrePosition;
+  const translate =
+    50 -
+    centrePosition;
 
   backgroundStrip.style.transform =
     `translateX(${translate}vw)`;
@@ -358,7 +527,9 @@ function updateBackgroundTransform(animate = true) {
   if (!animate) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        backgroundStrip.classList.remove("no-transition");
+        backgroundStrip.classList.remove(
+          "no-transition"
+        );
       });
     });
   }
@@ -450,7 +621,9 @@ function setupAudioAnalyser() {
     )();
 
     const source =
-      audioContext.createMediaElementSource(audioPlayer);
+      audioContext.createMediaElementSource(
+        audioPlayer
+      );
 
     audioAnalyser =
       audioContext.createAnalyser();
@@ -459,7 +632,9 @@ function setupAudioAnalyser() {
     audioAnalyser.smoothingTimeConstant = 0.2;
 
     audioFreqData =
-      new Uint8Array(audioAnalyser.frequencyBinCount);
+      new Uint8Array(
+        audioAnalyser.frequencyBinCount
+      );
 
     source.connect(audioAnalyser);
     audioAnalyser.connect(audioContext.destination);
@@ -477,15 +652,23 @@ function setupAudioAnalyser() {
 
 
 function averageBins(start, end) {
-  const clampedStart = Math.max(0, start);
+  const clampedStart =
+    Math.max(
+      0,
+      start
+    );
 
   const clampedEnd =
-    Math.min(audioFreqData.length, end);
+    Math.min(
+      audioFreqData.length,
+      end
+    );
 
   const count =
     Math.max(
       1,
-      clampedEnd - clampedStart
+      clampedEnd -
+      clampedStart
     );
 
   let sum = 0;
@@ -498,14 +681,21 @@ function averageBins(start, end) {
     sum += audioFreqData[i];
   }
 
-  return sum / count / 255;
+  return (
+    sum /
+    count /
+    255
+  );
 }
 
 
 function rollingAverage(history, newValue) {
   history.push(newValue);
 
-  if (history.length > RHYTHM_HISTORY_SIZE) {
+  if (
+    history.length >
+    RHYTHM_HISTORY_SIZE
+  ) {
     history.shift();
   }
 
@@ -527,7 +717,9 @@ function updateRhythmEnergy() {
     return;
   }
 
-  audioAnalyser.getByteFrequencyData(audioFreqData);
+  audioAnalyser.getByteFrequencyData(
+    audioFreqData
+  );
 
   const binHz =
     audioContext.sampleRate /
@@ -539,38 +731,62 @@ function updateRhythmEnergy() {
   const bassEnd =
     Math.max(
       3,
-      Math.round(220 / binHz)
+      Math.round(
+        220 /
+        binHz
+      )
     );
 
   const trebleStart =
     Math.max(
       bassEnd,
-      Math.round(2000 / binHz)
+      Math.round(
+        2000 /
+        binHz
+      )
     );
 
   const trebleEnd =
-    Math.round(8000 / binHz);
+    Math.round(
+      8000 /
+      binHz
+    );
 
   const midStart =
     Math.max(
       bassEnd,
-      Math.round(300 / binHz)
+      Math.round(
+        300 /
+        binHz
+      )
     );
 
   const midEnd =
     Math.min(
       trebleStart,
-      Math.round(2000 / binHz)
+      Math.round(
+        2000 /
+        binHz
+      )
     );
 
   const bassLevel =
-    averageBins(bassStart, bassEnd);
+    averageBins(
+      bassStart,
+      bassEnd
+    );
 
   const trebleLevel =
-    averageBins(trebleStart, trebleEnd);
+    averageBins(
+      trebleStart,
+      trebleEnd
+    );
 
   const midLevel =
-    averageBins(midStart, midEnd);
+    averageBins(
+      midStart,
+      midEnd
+    );
 
   melodyLevel +=
     (midLevel - melodyLevel) *
@@ -614,7 +830,8 @@ function updateRhythmEnergy() {
     isHit
       ? Math.min(
           1,
-          level * 1.6 + 0.25
+          level * 1.6 +
+          0.25
         )
       : level;
 
@@ -646,7 +863,8 @@ function smoothClosedPath(points) {
         n
       ];
 
-    const p1 = points[i];
+    const p1 =
+      points[i];
 
     const p2 =
       points[
@@ -662,19 +880,23 @@ function smoothClosedPath(points) {
 
     const cp1x =
       p1.x +
-      (p2.x - p0.x) / 6;
+      (p2.x - p0.x) /
+      6;
 
     const cp1y =
       p1.y +
-      (p2.y - p0.y) / 6;
+      (p2.y - p0.y) /
+      6;
 
     const cp2x =
       p2.x -
-      (p3.x - p1.x) / 6;
+      (p3.x - p1.x) /
+      6;
 
     const cp2y =
       p2.y -
-      (p3.y - p1.y) / 6;
+      (p3.y - p1.y) /
+      6;
 
     path +=
       `C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.x} ${p2.y} `;
@@ -691,7 +913,8 @@ function auraBlobPath(
   reactivity,
   melody
 ) {
-  const amplitude = AURA_AMPLITUDE;
+  const amplitude =
+    AURA_AMPLITUDE;
 
   const outerBase =
     AURA_OUTER_R +
@@ -717,27 +940,34 @@ function auraBlobPath(
         time *
           (
             0.5 +
-            melody * 1.1
+            melody *
+            1.1
           ) +
-        seed * 0.5
+        seed *
+        0.5
       ) *
       (
         0.55 +
-        melody * 0.55
+        melody *
+        0.55
       );
 
     const texture =
       Math.sin(
         angle * 5 +
-        time * 0.9 +
-        seed * 1.7
+        time *
+        0.9 +
+        seed *
+        1.7
       ) *
       0.16 +
 
       Math.sin(
         angle * 7 -
-        time * 1.3 +
-        seed * 2.3
+        time *
+        1.3 +
+        seed *
+        2.3
       ) *
       0.1;
 
@@ -774,16 +1004,20 @@ function auraFrame(now) {
 
   updateRhythmEnergy();
 
-  const track = tracks[currentTrack];
+  const track =
+    tracks[currentTrack];
 
   const reactivity =
-    track.reactivity ?? 1;
+    track.reactivity ??
+    1;
 
   const highlightPunch =
-    track.highlightPunch ?? 1;
+    track.highlightPunch ??
+    1;
 
   const melodySensitivity =
-    track.melodySensitivity ?? 1;
+    track.melodySensitivity ??
+    1;
 
   const punch =
     Math.max(
@@ -795,7 +1029,8 @@ function auraFrame(now) {
     Math.min(
       1,
       rhythmEnergy +
-      kickPulse * 0.35
+      kickPulse *
+      0.35
     );
 
   auraPath.setAttribute(
@@ -805,7 +1040,8 @@ function auraFrame(now) {
       currentTrack * 2.1,
       shapeEnergy,
       reactivity,
-      melodyLevel * melodySensitivity
+      melodyLevel *
+      melodySensitivity
     )
   );
 
@@ -848,7 +1084,9 @@ function auraFrame(now) {
     );
 
   auraFrameId =
-    requestAnimationFrame(auraFrame);
+    requestAnimationFrame(
+      auraFrame
+    );
 }
 
 
@@ -866,20 +1104,28 @@ function startAura() {
     audioContext.resume();
   }
 
-  auraStage.classList.add("is-active");
+  auraStage.classList.add(
+    "is-active"
+  );
 
   auraFrameId =
-    requestAnimationFrame(auraFrame);
+    requestAnimationFrame(
+      auraFrame
+    );
 }
 
 
 function stopAura() {
-  auraStage.classList.remove("is-active");
+  auraStage.classList.remove(
+    "is-active"
+  );
 
   kickPulse = 0;
 
   if (auraFrameId !== null) {
-    cancelAnimationFrame(auraFrameId);
+    cancelAnimationFrame(
+      auraFrameId
+    );
 
     auraFrameId = null;
   }
@@ -956,7 +1202,8 @@ function togglePlay() {
 
 function updatePlayState() {
   if (isPlaying) {
-    playIcon.className = "pause-icon";
+    playIcon.className =
+      "pause-icon";
 
     playButton.setAttribute(
       "aria-label",
@@ -965,7 +1212,8 @@ function updatePlayState() {
   }
 
   else {
-    playIcon.className = "play-icon";
+    playIcon.className =
+      "play-icon";
 
     playButton.setAttribute(
       "aria-label",
@@ -1038,7 +1286,8 @@ function easeOutCubic(value) {
 
 function wrapOffset(offset) {
   const half =
-    tracks.length / 2;
+    tracks.length /
+    2;
 
   return (
     (
@@ -1061,7 +1310,8 @@ function centeredDiff(
   index,
   startIndex
 ) {
-  const length = tracks.length;
+  const length =
+    tracks.length;
 
   let distance =
     (
@@ -1075,7 +1325,8 @@ function centeredDiff(
     length;
 
   const half =
-    length / 2;
+    length /
+    2;
 
   if (distance > half) {
     distance -= length;
@@ -1118,16 +1369,28 @@ function transformForOffset(offset) {
       fraction;
 
   const x =
-    lerp(lower.x, upper.x);
+    lerp(
+      lower.x,
+      upper.x
+    );
 
   const y =
-    lerp(lower.y, upper.y);
+    lerp(
+      lower.y,
+      upper.y
+    );
 
   const scale =
-    lerp(lower.scale, upper.scale);
+    lerp(
+      lower.scale,
+      upper.scale
+    );
 
   const rotate =
-    lerp(lower.rotate, upper.rotate);
+    lerp(
+      lower.rotate,
+      upper.rotate
+    );
 
   return (
     `translate(-50%, -50%) translate(${x}%, ${y}%) scale(${scale}) rotate(${rotate}deg)`
@@ -1155,7 +1418,8 @@ function animateTransition(
 
   updatePlayState();
 
-  const startIndex = currentTrack;
+  const startIndex =
+    currentTrack;
 
   const shifts =
     direction === "next"
@@ -1184,7 +1448,9 @@ function animateTransition(
   );
 
   const shells =
-    document.querySelectorAll(".record-shell");
+    document.querySelectorAll(
+      ".record-shell"
+    );
 
   const duration =
     700 +
@@ -1209,7 +1475,9 @@ function animateTransition(
 
     shells.forEach(shell => {
       const index =
-        Number(shell.dataset.index);
+        Number(
+          shell.dataset.index
+        );
 
       const offset =
         wrapOffset(
@@ -1274,10 +1542,14 @@ function finishTransition(
   targetIndex,
   shifts
 ) {
-  currentTrack = targetIndex;
-  visualTrack = targetIndex;
+  currentTrack =
+    targetIndex;
 
-  backgroundCentreIndex -= shifts;
+  visualTrack =
+    targetIndex;
+
+  backgroundCentreIndex -=
+    shifts;
 
   document
     .querySelectorAll(".record-shell")
@@ -1299,7 +1571,8 @@ function finishTransition(
   normaliseBackgroundPosition();
 
   playCurrentTrack().then(() => {
-    isTransitioning = false;
+    isTransitioning =
+      false;
   });
 }
 
@@ -1427,8 +1700,11 @@ function updateProgress() {
 function applyScrubRecordMotion(
   newPercentage
 ) {
-  if (lastScrubPercentage === null) {
-    lastScrubPercentage = newPercentage;
+  if (
+    lastScrubPercentage === null
+  ) {
+    lastScrubPercentage =
+      newPercentage;
 
     return;
   }
@@ -1438,7 +1714,8 @@ function applyScrubRecordMotion(
     lastScrubPercentage;
 
   scrubAngles[currentTrack] +=
-    delta * 190;
+    delta *
+    190;
 
   scrubAngles[currentTrack] =
     Math.max(
@@ -1451,7 +1728,8 @@ function applyScrubRecordMotion(
 
   updateScrubVisuals();
 
-  lastScrubPercentage = newPercentage;
+  lastScrubPercentage =
+    newPercentage;
 }
 
 
@@ -1523,6 +1801,7 @@ function finishProgressDrag(event) {
   seekFromPointer(event);
 
   isDraggingProgress = false;
+
   lastScrubPercentage = null;
 
   progressContainer.classList.remove(
@@ -1551,6 +1830,7 @@ progressContainer.addEventListener(
   "pointercancel",
   event => {
     isDraggingProgress = false;
+
     lastScrubPercentage = null;
 
     progressContainer.classList.remove(
@@ -1573,12 +1853,14 @@ progressContainer.addEventListener(
 function formatTime(seconds) {
   const minutes =
     Math.floor(
-      seconds / 60
+      seconds /
+      60
     );
 
   const remainingSeconds =
     Math.floor(
-      seconds % 60
+      seconds %
+      60
     );
 
   return (
@@ -1657,39 +1939,41 @@ timeDisplay.addEventListener(
 );
 
 
-// Volume control: the slider directly sets audioPlayer.volume (0-1).
-// Revealing/hiding the slider on hover is handled purely in CSS
-// (.volume-control:hover / :focus-within), so this only needs to react
-// to the slider's own value changing.
+// Volume control
 
 if (volumeSlider) {
-  // The slider is a horizontal <input type="range"> rotated -90deg to
-  // read as vertical, so a left-to-right gradient (0% at the input's
-  // own "left"/min end) ends up bottom-to-top once rotated — which is
-  // exactly the "fills up from the bottom to the current level" look.
+
+  // Update the visible fill to match the current volume.
   const applyVolumeFill = () => {
-    const percent = Number(volumeSlider.value) * 100;
+    const percent =
+      Number(
+        volumeSlider.value
+      ) *
+      100;
 
     const fill =
       `linear-gradient(to right, white 0%, white ${percent}%, rgba(255, 255, 255, 0.24) ${percent}%, rgba(255, 255, 255, 0.24) 100%)`;
 
-    volumeSlider.style.background = fill;
+    volumeSlider.style.background =
+      fill;
 
-    // Firefox ignores the input element's own background for its track,
-    // so the ::-moz-range-track rule in style.css reads this instead.
-    volumeSlider.style.setProperty("--volume-fill", fill);
+    // Use the same fill for Firefox.
+    volumeSlider.style.setProperty(
+      "--volume-fill",
+      fill
+    );
   };
 
   let isMuted = false;
 
-  // The icon looks muted either because the mute button was clicked, or
-  // because the slider itself has been dragged all the way down to 0 —
-  // both should look the same, even though only the button click
-  // actually sets audioPlayer.muted.
+
+  // Show the muted icon when muted or when the volume reaches zero.
   function updateVolumeIcon() {
     const looksMuted =
       isMuted ||
-      Number(volumeSlider.value) === 0;
+      Number(
+        volumeSlider.value
+      ) === 0;
 
     if (volumeButton) {
       volumeButton.classList.toggle(
@@ -1699,14 +1983,20 @@ if (volumeSlider) {
 
       volumeButton.setAttribute(
         "aria-label",
-        looksMuted ? "Unmute" : "Mute"
+        looksMuted
+          ? "Unmute"
+          : "Mute"
       );
     }
   }
 
+
   function setMuted(muted) {
-    isMuted = muted;
-    audioPlayer.muted = muted;
+    isMuted =
+      muted;
+
+    audioPlayer.muted =
+      muted;
 
     if (volumeButton) {
       volumeButton.setAttribute(
@@ -1718,30 +2008,47 @@ if (volumeSlider) {
     updateVolumeIcon();
   }
 
-  audioPlayer.volume = Number(volumeSlider.value);
+
+  audioPlayer.volume =
+    Number(
+      volumeSlider.value
+    );
+
   applyVolumeFill();
   updateVolumeIcon();
 
-  volumeSlider.addEventListener("input", () => {
-    audioPlayer.volume = Number(volumeSlider.value);
-    applyVolumeFill();
 
-    // Dragging the slider is a clearer "I want sound" signal than
-    // leaving it muted, so it un-mutes automatically — same as most
-    // media players.
-    if (isMuted) {
-      setMuted(false);
-    }
+  volumeSlider.addEventListener(
+    "input",
+    () => {
+      audioPlayer.volume =
+        Number(
+          volumeSlider.value
+        );
 
-    else {
-      updateVolumeIcon();
+      applyVolumeFill();
+
+      // Moving the slider turns the sound back on if it was muted.
+      if (isMuted) {
+        setMuted(false);
+      }
+
+      else {
+        updateVolumeIcon();
+      }
     }
-  });
+  );
+
 
   if (volumeButton) {
-    volumeButton.addEventListener("click", () => {
-      setMuted(!isMuted);
-    });
+    volumeButton.addEventListener(
+      "click",
+      () => {
+        setMuted(
+          !isMuted
+        );
+      }
+    );
   }
 }
 
@@ -1840,6 +2147,7 @@ function initialisePlayer() {
 
   updateRecordPositions();
   updateTrackList();
+  updatePreferencesPanel();
 
   updateBackgroundTransform(false);
 

@@ -101,6 +101,117 @@ button {
   letter-spacing: -0.03em;
 }
 
+/* Liked tracks panel */
+
+.preferences-panel {
+  position: absolute;
+  top: 0;
+  left: 16px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px;
+  width: 220px;
+  border-radius: 0 0 18px 18px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  /* The panel becomes interactive after at least one track is liked. */
+  pointer-events: none;
+}
+
+.preferences-panel.has-liked {
+  pointer-events: auto;
+}
+
+.preferences-panel.has-liked:hover,
+.preferences-panel.has-liked:focus-within {
+  background: rgba(20, 18, 24, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.pref-heart-icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 220ms ease;
+}
+
+/* Empty heart before any tracks are liked. */
+.pref-heart-icon path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  transition: fill 220ms ease;
+}
+
+.preferences-panel.has-liked .pref-heart-icon {
+  color: white;
+}
+
+.preferences-panel.has-liked .pref-heart-icon path {
+  fill: currentColor;
+}
+
+/* The liked-track list opens on hover or focus. */
+.preferences-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-top: 0;
+  /* A small upward offset makes the list feel like it drops into place. */
+  transform: translateY(-10px);
+  transition: max-height 280ms ease, opacity 200ms ease, margin-top 250ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.preferences-panel.has-liked:hover .preferences-list,
+.preferences-panel.has-liked:focus-within .preferences-list {
+  max-height: 320px;
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 12px;
+}
+
+.preferences-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.preferences-item-cover {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.preferences-item-title {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 180ms ease;
+}
+
+.preferences-item:hover .preferences-item-title {
+  color: white;
+}
+
 /* Track description */
 
 .track-story {
@@ -235,7 +346,7 @@ button {
   mix-blend-mode: screen;
   fill: url(#auraGradient);
   fill-opacity: 0.7;
-  filter: blur(40px);
+  /* Blur is handled by the SVG filter in index.html. */
 }
 
 .records-container {
@@ -247,8 +358,7 @@ button {
 
 /* Records */
 
-.records-container.no-transition 
-.record-shell {
+.records-container.no-transition .record-shell {
   transition: none !important;
 }
 
@@ -518,12 +628,7 @@ button {
   opacity: 0.7;
 }
 
-/* Volume control
-
-   I wanted to keep the volume control small so it would not make the
-   centre player feel too crowded. The slider only appears when the
-   volume icon is hovered or focused.
-*/
+/* Volume control */
 
 .volume-control {
   position: relative;
@@ -559,6 +664,7 @@ button {
   appearance: none;
   width: 66px;
   height: 3px;
+  /* Fallback before JavaScript updates the slider fill. */
   background: rgba(255, 255, 255, 0.24);
   border-radius: 999px;
   outline: none;
@@ -585,10 +691,7 @@ button {
   cursor: pointer;
 }
 
-/* Firefox draws its own track under the thumb regardless of the
-   element's own background, so it needs the fill applied here too —
-   handled from JS by writing the same gradient to this element's
-   background via a CSS custom property. */
+/* Firefox uses the same volume fill through a CSS variable. */
 .volume-slider::-moz-range-track {
   background: var(--volume-fill, rgba(255, 255, 255, 0.24));
   height: 3px;
@@ -625,8 +728,7 @@ button {
   transition: opacity 150ms ease;
 }
 
-/* Muted: hide the sound-wave arcs and draw a short diagonal line across
-   the icon, same visual language as a typical "muted speaker" glyph. */
+/* Muted speaker icon */
 .volume-button.is-muted .volume-wave {
   opacity: 0;
 }
@@ -687,6 +789,51 @@ button {
 .track-button.active {
   color: white;
   transform: translateX(2px);
+}
+
+/* Heart button + track title */
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.track-heart {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: color 180ms ease, transform 150ms ease;
+}
+
+.track-heart:hover {
+  color: rgba(255, 255, 255, 0.75);
+  transform: scale(1.12);
+}
+
+.track-heart .heart-icon {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+/* Filled heart for liked tracks. */
+.track-heart.is-liked {
+  color: white;
+}
+
+.track-heart.is-liked .heart-icon {
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 /* Responsive */
