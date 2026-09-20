@@ -36,6 +36,7 @@ const tracks = [
     cover: "images/02 drydown-cover.png",
     mood: "Feeling of Blue Rush",
     description: "The bright blue reflects the speed and tension of modern life, turning the pressure of everyday routines into a restless urban journey.",
+    melodySensitivity: 0.6,
     backgroundColour: "#031819",
     auraColour: "#22c2e0",
     audio: "https://thelongesthumstore.sgp1.cdn.digitaloceanspaces.com/IM-2250/p-hase_Dry-Down-feat-Ben-Snaath.mp3"
@@ -61,7 +62,7 @@ const tracks = [
     mood: "Feeling of Mint Flow",
     description: "The mint colour feels light and fluid, moving continuously like ripples on water, with one moment gently flowing into the next.",
     highlightPunch: 0.55,
-    melodySensitivity: 0.55,
+    melodySensitivity: 0.5,
     backgroundColour: "#001611",
     auraColour: "#2fe0b0",
     audio: "https://thelongesthumstore.sgp1.cdn.digitaloceanspaces.com/IM-2250/p-hase_Water-Feature.mp3"
