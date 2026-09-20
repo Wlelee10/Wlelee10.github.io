@@ -463,11 +463,11 @@ button {
   position: absolute;
   left: 50%;
   top: 59%;
-  width: 74%;
+  width: 90%;
   transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 12px;
 }
 
 .progress-container {
@@ -508,7 +508,6 @@ button {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.78);
   white-space: nowrap;
-  transform: translate(5px, 2px);
   cursor: pointer;
   user-select: none;
   transition: opacity 180ms ease;
@@ -516,6 +515,136 @@ button {
 
 .time-display:hover {
   opacity: 0.7;
+}
+
+/* Volume control — modelled on the macOS menu-bar volume icon: hovering
+   or focusing reveals a vertical slider above the icon.
+
+   Important: the wrap is always kept at its FULL final size (no
+   scale/grow animation on the interactive element itself) and only its
+   opacity is animated, with pointer-events flipped on immediately. If
+   the wrap instead grew from 0 height while fading in, a mouse moving
+   upward from the icon would outrun the still-growing hit area, land
+   on empty space, lose :hover, and the slider would collapse again —
+   exactly the "can't reach the slider" bug this avoids. */
+
+.volume-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.volume-slider-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  width: 28px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.volume-control:hover .volume-slider-wrap,
+.volume-control:focus-within .volume-slider-wrap {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 66px;
+  height: 3px;
+  /* Overwritten from JS on load and on every input to show the
+     bottom-to-top fill; this is just a safe fallback before JS runs. */
+  background: rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  transform: rotate(-90deg);
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+}
+
+/* Firefox draws its own track under the thumb regardless of the
+   element's own background, so it needs the fill applied here too —
+   handled from JS by writing the same gradient to this element's
+   background via a CSS custom property. */
+.volume-slider::-moz-range-track {
+  background: var(--volume-fill, rgba(255, 255, 255, 0.24));
+  height: 3px;
+  border-radius: 999px;
+}
+
+.volume-button {
+  position: relative;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  opacity: 0.72;
+  cursor: pointer;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.volume-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.volume-control:hover .volume-button,
+.volume-control:focus-within .volume-button,
+.volume-button:hover,
+.volume-button:focus-visible {
+  opacity: 1;
+}
+
+.volume-wave {
+  transition: opacity 150ms ease;
+}
+
+/* Muted: hide the sound-wave arcs and draw a short diagonal line across
+   the icon, same visual language as a typical "muted speaker" glyph. */
+.volume-button.is-muted .volume-wave {
+  opacity: 0;
+}
+
+.volume-button.is-muted::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 17px;
+  height: 1.6px;
+  background: currentColor;
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 /* Track list */

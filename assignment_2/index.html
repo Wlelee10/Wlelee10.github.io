@@ -23,7 +23,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>P-HASE</title>
+  <title>P-HASE MUSIC ALBUM</title>
 
   <link rel="icon" type="image/png" href="images/WebTitleIcon.png">
   <link rel="stylesheet" href="style.css">
@@ -232,6 +232,15 @@
 
         <div class="timeline-row">
 
+          <span
+            id="timeDisplay"
+            class="time-display"
+            role="button"
+            tabindex="0"
+            aria-label="Toggle elapsed and remaining time"
+          >0:00</span>
+
+
           <div
             class="progress-container"
             id="progressContainer"
@@ -250,13 +259,61 @@
           </div>
 
 
-          <span
-            id="timeDisplay"
-            class="time-display"
-            role="button"
-            tabindex="0"
-            aria-label="Toggle elapsed and remaining time"
-          >-0:00</span>
+          <!--
+            Volume control, modelled on the macOS menu-bar volume icon:
+            the slider is collapsed to nothing until the icon is
+            hovered/focused, then it slides out to the left of it
+            (see .volume-control in style.css).
+          -->
+
+          <div class="volume-control" id="volumeControl">
+
+            <div class="volume-slider-wrap">
+
+              <input
+                type="range"
+                id="volumeSlider"
+                class="volume-slider"
+                min="0"
+                max="1"
+                step="0.01"
+                value="1"
+                aria-label="Volume"
+                aria-orientation="vertical"
+              >
+
+            </div>
+
+            <button
+              id="volumeButton"
+              class="volume-button"
+              aria-label="Mute"
+              aria-pressed="false"
+              tabindex="0"
+            >
+
+              <svg
+                class="volume-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  fill="currentColor"
+                  d="M4 9v6h4l5 5V4L8 9H4z"
+                ></path>
+                <path
+                  class="volume-wave"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  d="M16.2 8.6a5 5 0 0 1 0 6.8 M18.6 6.2a8.5 8.5 0 0 1 0 11.6"
+                ></path>
+              </svg>
+
+            </button>
+
+          </div>
 
         </div>
 
@@ -295,7 +352,7 @@
 
     <audio
       id="audioPlayer"
-      preload="metadata"
+      preload="auto"
     ></audio>
 
   </main>

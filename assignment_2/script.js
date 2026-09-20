@@ -84,6 +84,16 @@ const trackStoryBody = document.querySelector("#trackStoryBody");
 
 const audioPlayer = document.querySelector("#audioPlayer");
 
+// Set once, up front, before this element's src is ever loaded.
+// Changing crossOrigin AFTER a load has already started makes the
+// browser abandon that load and refetch from scratch — which is
+// exactly what was happening when this got set lazily inside
+// setupAudioAnalyser() on first play: the audio would already be
+// loading (or just started playing) by then, so flipping the
+// attribute silently restarted the fetch and playback never
+// actually began until the next track load did it "clean".
+audioPlayer.crossOrigin = "anonymous";
+
 const playButton = document.querySelector("#playButton");
 const playIcon = document.querySelector("#playIcon");
 
@@ -93,6 +103,9 @@ const nextButton = document.querySelector("#nextButton");
 const progressFill = document.querySelector("#progressFill");
 const progressContainer = document.querySelector("#progressContainer");
 const timeDisplay = document.querySelector("#timeDisplay");
+
+const volumeButton = document.querySelector("#volumeButton");
+const volumeSlider = document.querySelector("#volumeSlider");
 
 
 // Player state
@@ -108,7 +121,7 @@ let hiddenSide = "left";
 let isDraggingProgress = false;
 let lastScrubPercentage = null;
 
-let showElapsedTime = false;
+let showElapsedTime = true;
 
 const scrubAngles = new Array(tracks.length).fill(0);
 
@@ -431,8 +444,6 @@ function setupAudioAnalyser() {
   }
 
   try {
-    audioPlayer.crossOrigin = "anonymous";
-
     audioContext = new (
       window.AudioContext ||
       window.webkitAudioContext
@@ -1644,6 +1655,95 @@ timeDisplay.addEventListener(
     }
   }
 );
+
+
+// Volume control: the slider directly sets audioPlayer.volume (0-1).
+// Revealing/hiding the slider on hover is handled purely in CSS
+// (.volume-control:hover / :focus-within), so this only needs to react
+// to the slider's own value changing.
+
+if (volumeSlider) {
+  // The slider is a horizontal <input type="range"> rotated -90deg to
+  // read as vertical, so a left-to-right gradient (0% at the input's
+  // own "left"/min end) ends up bottom-to-top once rotated — which is
+  // exactly the "fills up from the bottom to the current level" look.
+  const applyVolumeFill = () => {
+    const percent = Number(volumeSlider.value) * 100;
+
+    const fill =
+      `linear-gradient(to right, white 0%, white ${percent}%, rgba(255, 255, 255, 0.24) ${percent}%, rgba(255, 255, 255, 0.24) 100%)`;
+
+    volumeSlider.style.background = fill;
+
+    // Firefox ignores the input element's own background for its track,
+    // so the ::-moz-range-track rule in style.css reads this instead.
+    volumeSlider.style.setProperty("--volume-fill", fill);
+  };
+
+  let isMuted = false;
+
+  // The icon looks muted either because the mute button was clicked, or
+  // because the slider itself has been dragged all the way down to 0 —
+  // both should look the same, even though only the button click
+  // actually sets audioPlayer.muted.
+  function updateVolumeIcon() {
+    const looksMuted =
+      isMuted ||
+      Number(volumeSlider.value) === 0;
+
+    if (volumeButton) {
+      volumeButton.classList.toggle(
+        "is-muted",
+        looksMuted
+      );
+
+      volumeButton.setAttribute(
+        "aria-label",
+        looksMuted ? "Unmute" : "Mute"
+      );
+    }
+  }
+
+  function setMuted(muted) {
+    isMuted = muted;
+    audioPlayer.muted = muted;
+
+    if (volumeButton) {
+      volumeButton.setAttribute(
+        "aria-pressed",
+        String(muted)
+      );
+    }
+
+    updateVolumeIcon();
+  }
+
+  audioPlayer.volume = Number(volumeSlider.value);
+  applyVolumeFill();
+  updateVolumeIcon();
+
+  volumeSlider.addEventListener("input", () => {
+    audioPlayer.volume = Number(volumeSlider.value);
+    applyVolumeFill();
+
+    // Dragging the slider is a clearer "I want sound" signal than
+    // leaving it muted, so it un-mutes automatically — same as most
+    // media players.
+    if (isMuted) {
+      setMuted(false);
+    }
+
+    else {
+      updateVolumeIcon();
+    }
+  });
+
+  if (volumeButton) {
+    volumeButton.addEventListener("click", () => {
+      setMuted(!isMuted);
+    });
+  }
+}
 
 
 audioPlayer.addEventListener(
