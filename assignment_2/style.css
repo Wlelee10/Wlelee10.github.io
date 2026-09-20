@@ -245,8 +245,9 @@ button {
   z-index: 5;
 }
 
-.records-container.no-transition 
 /* Records */
+
+.records-container.no-transition 
 .record-shell {
   transition: none !important;
 }
@@ -517,16 +518,12 @@ button {
   opacity: 0.7;
 }
 
-/* Volume control — modelled on the macOS menu-bar volume icon: hovering
-   or focusing reveals a vertical slider above the icon.
+/* Volume control
 
-   Important: the wrap is always kept at its FULL final size (no
-   scale/grow animation on the interactive element itself) and only its
-   opacity is animated, with pointer-events flipped on immediately. If
-   the wrap instead grew from 0 height while fading in, a mouse moving
-   upward from the icon would outrun the still-growing hit area, land
-   on empty space, lose :hover, and the slider would collapse again —
-   exactly the "can't reach the slider" bug this avoids. */
+   I wanted to keep the volume control small so it would not make the
+   centre player feel too crowded. The slider only appears when the
+   volume icon is hovered or focused.
+*/
 
 .volume-control {
   position: relative;
@@ -562,8 +559,6 @@ button {
   appearance: none;
   width: 66px;
   height: 3px;
-  /* Overwritten from JS on load and on every input to show the
-     bottom-to-top fill; this is just a safe fallback before JS runs. */
   background: rgba(255, 255, 255, 0.24);
   border-radius: 999px;
   outline: none;
