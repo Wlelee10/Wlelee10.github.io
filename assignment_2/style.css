@@ -117,7 +117,7 @@ button {
   background: rgba(255, 255, 255, 0.07);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  /* The panel becomes interactive after at least one track is liked. */
+  /* The panel becomes interactive once a track is liked. */
   pointer-events: none;
 }
 
@@ -140,7 +140,7 @@ button {
   transition: color 220ms ease;
 }
 
-/* Empty heart before any tracks are liked. */
+/* Empty heart before a track is liked. */
 .pref-heart-icon path {
   fill: none;
   stroke: currentColor;
@@ -156,6 +156,22 @@ button {
   fill: currentColor;
 }
 
+/* Small pulse when another track is added to the liked list. */
+@keyframes prefHeartPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.pref-heart-icon.is-pulsing {
+  animation: prefHeartPulse 650ms ease-in-out 1;
+}
+
 /* The liked-track list opens on hover or focus. */
 .preferences-list {
   display: flex;
@@ -166,7 +182,7 @@ button {
   overflow: hidden;
   opacity: 0;
   margin-top: 0;
-  /* A small upward offset makes the list feel like it drops into place. */
+  /* Small offset so the list feels like it drops into place. */
   transform: translateY(-10px);
   transition: max-height 280ms ease, opacity 200ms ease, margin-top 250ms ease, transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -664,7 +680,7 @@ button {
   appearance: none;
   width: 66px;
   height: 3px;
-  /* Fallback before JavaScript updates the slider fill. */
+  /* Fallback before JavaScript updates the fill. */
   background: rgba(255, 255, 255, 0.24);
   border-radius: 999px;
   outline: none;
@@ -691,7 +707,7 @@ button {
   cursor: pointer;
 }
 
-/* Firefox uses the same volume fill through a CSS variable. */
+/* Same volume fill for Firefox. */
 .volume-slider::-moz-range-track {
   background: var(--volume-fill, rgba(255, 255, 255, 0.24));
   height: 3px;

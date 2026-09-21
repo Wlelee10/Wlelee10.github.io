@@ -271,7 +271,38 @@ function createHeartIcon() {
 const likedTracks = new Set();
 
 
+function pulsePreferencesHeart() {
+  const heart =
+    document.querySelector(".pref-heart-icon");
+
+  if (!heart) {
+    return;
+  }
+
+  // Restart the pulse if another like happens quickly.
+  heart.classList.remove("is-pulsing");
+
+  void heart.offsetWidth;
+
+  heart.classList.add("is-pulsing");
+
+  heart.addEventListener(
+    "animationend",
+    () => {
+      heart.classList.remove("is-pulsing");
+    },
+    { once: true }
+  );
+}
+
+
 function toggleLiked(index) {
+  const hadAnyLikedBefore =
+    likedTracks.size > 0;
+
+  const willBeLiked =
+    !likedTracks.has(index);
+
   if (likedTracks.has(index)) {
     likedTracks.delete(index);
   }
@@ -298,6 +329,11 @@ function toggleLiked(index) {
   }
 
   updatePreferencesPanel();
+
+  // The first like fills the panel heart. Later likes use a short pulse.
+  if (willBeLiked && hadAnyLikedBefore) {
+    pulsePreferencesHeart();
+  }
 }
 
 
@@ -1957,7 +1993,7 @@ if (volumeSlider) {
     volumeSlider.style.background =
       fill;
 
-    // Use the same fill for Firefox.
+    // Same fill for Firefox.
     volumeSlider.style.setProperty(
       "--volume-fill",
       fill
@@ -1967,7 +2003,7 @@ if (volumeSlider) {
   let isMuted = false;
 
 
-  // Show the muted icon when muted or when the volume reaches zero.
+  // Show the muted icon when the sound is muted or set to zero.
   function updateVolumeIcon() {
     const looksMuted =
       isMuted ||
