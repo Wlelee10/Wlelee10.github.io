@@ -1,0 +1,269 @@
+/* ==========================================================
+   I changed the room mostly white and light grey so the red speech
+   bubbles stay as the main focus. The person remains black so the
+   posture is easy to read without facial detail.
+   ========================================================== */
+
+:root {
+  --sky: #ffffff;
+  --sky-deep: #f2f2f2;
+  --corner: #d4d4d4;
+  --floor: #f4f4f4;
+  --ink: #2a2a2a;
+  --figure: #000000;
+  --ember: #ff3a14;
+  --soft: rgba(0, 0, 0, 0.5);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+
+/* The normal pointer is replaced by a small SVG needle so clicking feels
+   connected to puncturing the speech bubbles rather than normal navigation.
+
+   MDN:
+   https://developer.mozilla.org/en-US/docs/Web/CSS/cursor
+*/
+
+html {
+  --needle:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg transform='rotate%28-45 16 16%29'%3E%3Cpath d='M16 1.5L16.9 22v3.2c.5.4.9 1 .9 1.8v3.2c0 1.2-.6 2.3-1.8 2.3s-1.8-1.1-1.8-2.3V27c0-.8.4-1.4.9-1.8V22L15.1 1.5z' fill='%23000'/%3E%3Crect x='15.45' y='26.6' width='1.1' height='3.8' rx='.55' fill='%23fff'/%3E%3C/g%3E%3C/svg%3E")
+    6 6,
+    crosshair;
+
+  cursor: var(--needle);
+}
+
+body {
+  background: var(--sky-deep);
+
+  background-image:
+    linear-gradient(
+      to bottom,
+      var(--sky) 0%,
+      var(--sky) 45%,
+      var(--sky-deep) 100%
+    );
+
+  color: var(--soft);
+
+  font-family:
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    "Apple SD Gothic Neo",
+    "Malgun Gothic",
+    sans-serif;
+
+  overflow: hidden;
+}
+
+.scene {
+  position: fixed;
+  inset: 0;
+}
+
+.scene svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.tone-sky {
+  stop-color: var(--sky);
+}
+
+.tone-corner {
+  stop-color: var(--corner);
+}
+
+.tone-floor {
+  stop-color: var(--floor);
+}
+
+.spill {
+  fill: var(--figure);
+}
+
+.scene,
+.scene * {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.word-pile,
+.spill {
+  font-family:
+    "Futura",
+    "Avenir Next",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-weight: 300;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+.rim-light {
+  flood-color: #ffece2;
+  flood-opacity: 0.55;
+}
+
+
+/* The figure is made from separate SVG paths in JavaScript. Rounded joins
+   keep the arms visually connected while the posture changes. */
+
+.silhouette path.arm {
+  fill: none;
+
+  stroke: var(--figure);
+  stroke-width: 12.5;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.silhouette path {
+  fill: var(--figure);
+  stroke: var(--figure);
+  stroke-width: 0.6;
+}
+
+.cast-shadow {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.figure-tone {
+  flood-color: var(--figure);
+}
+
+.shadow-tone {
+  flood-color: var(--ink);
+}
+
+.bubble circle,
+.bubble path {
+  stroke: none;
+}
+
+.bubble {
+  transition: filter 0.25s ease;
+}
+
+
+/* Hover feedback
+   I wanted the user to understand that the speech bubbles are interactive
+   before clicking them. After the bubbles have landed, JavaScript adds the
+   clickable class and CSS handles the visual feedback.
+
+   I used :hover with filter: brightness() to make the bubble slightly brighter
+   when the pointer moves over it. The change is intentionally small, and the
+   transition softens it so it reads as a cue rather than a separate animation.
+
+   The Week 3 class styling material helped me keep this interaction state in CSS
+   instead of changing the visual style directly in JavaScript.
+
+   MDN:
+   :hover
+   https://developer.mozilla.org/en-US/docs/Web/CSS/:hover
+
+   filter
+   https://developer.mozilla.org/en-US/docs/Web/CSS/filter
+
+   brightness()
+   https://developer.mozilla.org/en-US/docs/Web/CSS/filter-function/brightness
+
+   transition
+   https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+*/
+
+.clickable {
+  cursor: var(--needle);
+}
+
+.clickable:hover {
+  filter: brightness(1.18);
+}
+
+.hint {
+  position: absolute;
+
+  left: 50%;
+  bottom: 4vh;
+
+  transform: translateX(-50%);
+
+  font-size:
+    clamp(0.85rem, 1.1vw, 1rem);
+
+  letter-spacing: 0.05em;
+  color: var(--soft);
+  white-space: nowrap;
+  pointer-events: none;
+
+  transition: opacity 0.8s ease;
+}
+
+.is-hidden {
+  opacity: 0;
+}
+
+.ending-words text {
+  fill: var(--ember);
+}
+
+
+/* The two ending texts use different font stacks on purpose. The title is
+   narrow and spaced out, while the sentence is rounder and heavier so it
+   feels more like another physical weight on the figure's hands. */
+
+#title text {
+  font-family:
+    "Arial Narrow",
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+
+  font-weight: 700;
+  font-size: 34px;
+  letter-spacing: 0.22em;
+}
+
+#endWords text {
+  font-family:
+    "Arial Rounded MT Bold",
+    "Arial Rounded MT",
+    "Nunito",
+    "Arial Black",
+    sans-serif;
+
+  font-weight: 700;
+  font-size: 38px;
+  letter-spacing: 0.03em;
+}
+
+.ending-words {
+  pointer-events: none;
+}
+
+.paint-title {
+  flood-color: var(--figure);
+}
+
+.paint {
+  flood-color: var(--ember);
+}

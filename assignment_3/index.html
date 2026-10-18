@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Weight of Words — 말의 무게</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- The main artwork is SVG so the figure, speech bubbles, shadows and
+       ending text can all be changed by JavaScript without using separate images. -->
+
+  <main
+    class="scene"
+    aria-label="Words fall onto a person. Click the speech bubbles to ease the weight."
+  >
+
+    <svg
+      viewBox="0 0 1600 900"
+      preserveAspectRatio="xMidYMid meet"
+    >
+
+      <defs>
+
+        <linearGradient
+          id="wallTone"
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="746"
+        >
+          <stop offset="0" class="tone-sky"></stop>
+          <stop offset="0.25" class="tone-sky"></stop>
+          <stop offset="1" class="tone-corner"></stop>
+        </linearGradient>
+
+
+        <linearGradient
+          id="floorTone"
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          y1="746"
+          x2="0"
+          y2="1160"
+        >
+          <stop offset="0" class="tone-corner"></stop>
+          <stop offset="1" class="tone-floor"></stop>
+        </linearGradient>
+
+
+        <!-- SVG filters give the bubbles their grainy edge without using a texture image.
+             I used feTurbulence for noise and combined it with blur/composite steps
+             so the texture stays attached while a bubble changes size and colour.
+
+             MDN:
+             https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/filter
+             https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feTurbulence
+        -->
+
+        <filter
+          id="bubbleGrain"
+          x="-8%"
+          y="-8%"
+          width="116%"
+          height="116%"
+          color-interpolation-filters="sRGB"
+        >
+
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="1.1"
+            numOctaves="1"
+            seed="2"
+            result="noise"
+          ></feTurbulence>
+
+          <feColorMatrix
+            in="noise"
+            type="matrix"
+            values="1 0 0 0 0  1 0 0 0 0  1 0 0 0 0  0 0 0 0 1"
+            result="greyGrain"
+          ></feColorMatrix>
+
+          <feColorMatrix
+            in="noise"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0"
+            result="maskGrain"
+          ></feColorMatrix>
+
+          <feGaussianBlur
+            in="SourceAlpha"
+            stdDeviation="10"
+            result="deep"
+          ></feGaussianBlur>
+
+          <feComposite
+            in="SourceAlpha"
+            in2="deep"
+            operator="arithmetic"
+            k1="0"
+            k2="1"
+            k3="-1"
+            k4="0"
+            result="nearEdge"
+          ></feComposite>
+
+          <feColorMatrix
+            in="nearEdge"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.5 0"
+            result="rimMask"
+          ></feColorMatrix>
+
+          <feFlood
+            class="rim-light"
+            result="rimTone"
+          ></feFlood>
+
+          <feComposite
+            in="rimTone"
+            in2="rimMask"
+            operator="in"
+            result="rimLight"
+          ></feComposite>
+
+          <feMerge result="lit">
+            <feMergeNode in="SourceGraphic"></feMergeNode>
+            <feMergeNode in="rimLight"></feMergeNode>
+          </feMerge>
+
+          <feComposite
+            in="lit"
+            in2="greyGrain"
+            operator="arithmetic"
+            k1="0"
+            k2="1"
+            k3="0.75"
+            k4="-0.375"
+            result="speckled"
+          ></feComposite>
+
+          <feGaussianBlur
+            in="SourceAlpha"
+            stdDeviation="5"
+            result="softEdge"
+          ></feGaussianBlur>
+
+          <feComposite
+            in="softEdge"
+            in2="maskGrain"
+            operator="arithmetic"
+            k1="0"
+            k2="2.2"
+            k3="1.1"
+            k4="-1.35"
+            result="dottedEdge"
+          ></feComposite>
+
+          <feComposite
+            in="speckled"
+            in2="dottedEdge"
+            operator="in"
+          ></feComposite>
+
+        </filter>
+
+
+        <filter
+          id="joinSmooth"
+          x="-20%"
+          y="-20%"
+          width="140%"
+          height="140%"
+        >
+
+          <feGaussianBlur
+            in="SourceAlpha"
+            stdDeviation="2.6"
+          ></feGaussianBlur>
+
+          <feComponentTransfer result="joined">
+            <feFuncA
+              type="linear"
+              slope="24"
+              intercept="-11"
+            ></feFuncA>
+          </feComponentTransfer>
+
+          <feFlood
+            class="figure-tone"
+          ></feFlood>
+
+          <feComposite
+            in2="joined"
+            operator="in"
+          ></feComposite>
+
+        </filter>
+
+
+        <radialGradient
+          id="shadowFalloff"
+          gradientUnits="userSpaceOnUse"
+          cx="800"
+          cy="800"
+          r="760"
+        >
+          <stop offset="0" stop-color="#fff" stop-opacity="1"></stop>
+          <stop offset="0.3" stop-color="#fff" stop-opacity="0.8"></stop>
+          <stop offset="1" stop-color="#fff" stop-opacity="0.2"></stop>
+        </radialGradient>
+
+
+        <mask
+          id="shadowFade"
+          maskUnits="userSpaceOnUse"
+          x="-6000"
+          y="-4000"
+          width="13600"
+          height="9000"
+        >
+
+          <rect
+            x="-6000"
+            y="-4000"
+            width="13600"
+            height="9000"
+            fill="url(#shadowFalloff)"
+          ></rect>
+
+        </mask>
+
+
+        <filter
+          id="flatShadow"
+          x="-10%"
+          y="-300%"
+          width="120%"
+          height="700%"
+        >
+
+          <feComponentTransfer
+            in="SourceAlpha"
+            result="solid"
+          >
+            <feFuncA
+              type="discrete"
+              tableValues="0 1 1 1"
+            ></feFuncA>
+          </feComponentTransfer>
+
+          <feFlood
+            class="shadow-tone"
+            result="tone"
+          ></feFlood>
+
+          <feComposite
+            in="tone"
+            in2="solid"
+            operator="in"
+            result="flat"
+          ></feComposite>
+
+          <feGaussianBlur
+            in="flat"
+            stdDeviation="4 1.8"
+            result="core"
+          ></feGaussianBlur>
+
+          <feGaussianBlur
+            in="flat"
+            stdDeviation="14 5"
+            result="haze"
+          ></feGaussianBlur>
+
+          <feComponentTransfer
+            in="haze"
+            result="hazeSoft"
+          >
+            <feFuncA
+              type="linear"
+              slope="0.6"
+            ></feFuncA>
+          </feComponentTransfer>
+
+          <feMerge>
+            <feMergeNode in="hazeSoft"></feMergeNode>
+            <feMergeNode in="core"></feMergeNode>
+          </feMerge>
+
+        </filter>
+
+
+        <!-- The title and final sentence use SVG filter effects instead of image assets.
+             feDisplacementMap breaks the edges slightly, and the lighting filters on
+             the final sentence make the letters feel more physical.
+
+             MDN:
+             https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feDisplacementMap
+             https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/feDiffuseLighting
+        -->
+
+        <filter
+          id="marker"
+          x="-8%"
+          y="-60%"
+          width="116%"
+          height="220%"
+          color-interpolation-filters="sRGB"
+        >
+
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.07"
+            numOctaves="2"
+            seed="3"
+            result="wobble"
+          ></feTurbulence>
+
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="wobble"
+            scale="2.5"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="shape"
+          ></feDisplacementMap>
+
+          <feTurbulence
+            id="titleSizzle"
+            type="fractalNoise"
+            baseFrequency="0.55"
+            numOctaves="1"
+            seed="1"
+            result="sizzle"
+          ></feTurbulence>
+
+          <feDisplacementMap
+            in="shape"
+            in2="sizzle"
+            scale="1.8"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="buzzing"
+          ></feDisplacementMap>
+
+          <feTurbulence
+            id="titleFibre"
+            type="fractalNoise"
+            baseFrequency="0.9 0.5"
+            numOctaves="2"
+            seed="9"
+            result="fibre"
+          ></feTurbulence>
+
+          <feColorMatrix
+            in="fibre"
+            type="matrix"
+            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0"
+            result="grain"
+          ></feColorMatrix>
+
+          <feGaussianBlur
+            in="buzzing"
+            stdDeviation="0.6"
+            result="soft"
+          ></feGaussianBlur>
+
+          <feComposite
+            in="soft"
+            in2="grain"
+            operator="arithmetic"
+            k1="0"
+            k2="1"
+            k3="0.5"
+            k4="-0.25"
+            result="rough"
+          ></feComposite>
+
+          <feComponentTransfer
+            in="rough"
+            result="dry"
+          >
+            <feFuncA
+              type="linear"
+              slope="4"
+              intercept="-1.4"
+            ></feFuncA>
+          </feComponentTransfer>
+
+          <feFlood
+            class="paint-title"
+            result="ink"
+          ></feFlood>
+
+          <feComposite
+            in="ink"
+            in2="dry"
+            operator="in"
+          ></feComposite>
+
+        </filter>
+
+
+        <filter
+          id="fingers"
+          x="-5%"
+          y="-50%"
+          width="110%"
+          height="200%"
+          color-interpolation-filters="sRGB"
+        >
+
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.035"
+            numOctaves="2"
+            seed="6"
+            result="wobble"
+          ></feTurbulence>
+
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="wobble"
+            scale="5"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            result="shape"
+          ></feDisplacementMap>
+
+          <feGaussianBlur
+            in="shape"
+            stdDeviation="2.8"
+            result="bump"
+          ></feGaussianBlur>
+
+          <feDiffuseLighting
+            in="bump"
+            surfaceScale="3.5"
+            diffuseConstant="1.2"
+            lighting-color="#ffffff"
+            result="diffuse"
+          >
+
+            <feDistantLight
+              azimuth="235"
+              elevation="52"
+            ></feDistantLight>
+
+          </feDiffuseLighting>
+
+          <feSpecularLighting
+            in="bump"
+            surfaceScale="3.5"
+            specularConstant="0.35"
+            specularExponent="10"
+            lighting-color="#ffe0d4"
+            result="shine"
+          >
+
+            <feDistantLight
+              azimuth="235"
+              elevation="52"
+            ></feDistantLight>
+
+          </feSpecularLighting>
+
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.8"
+            numOctaves="2"
+            seed="3"
+            result="grain"
+          ></feTurbulence>
+
+          <feColorMatrix
+            in="grain"
+            type="saturate"
+            values="0"
+            result="grainGray"
+          ></feColorMatrix>
+
+          <feFlood
+            class="paint"
+            result="base"
+          ></feFlood>
+
+          <feComposite
+            in="base"
+            in2="diffuse"
+            operator="arithmetic"
+            k1="1"
+            k2="0"
+            k3="0"
+            k4="0"
+            result="shaded"
+          ></feComposite>
+
+          <feComposite
+            in="shaded"
+            in2="grainGray"
+            operator="arithmetic"
+            k1="0.4"
+            k2="0.78"
+            k3="0"
+            k4="0"
+            result="skin"
+          ></feComposite>
+
+          <feComposite
+            in="shine"
+            in2="shape"
+            operator="in"
+            result="shineIn"
+          ></feComposite>
+
+          <feComposite
+            in="skin"
+            in2="shineIn"
+            operator="arithmetic"
+            k1="0"
+            k2="1"
+            k3="0.45"
+            k4="0"
+            result="lit"
+          ></feComposite>
+
+          <feComposite
+            in="lit"
+            in2="shape"
+            operator="in"
+          ></feComposite>
+
+        </filter>
+
+      </defs>
+
+
+      <rect
+        x="-6000"
+        y="-4000"
+        width="13600"
+        height="4750"
+        fill="url(#wallTone)"
+        aria-hidden="true"
+      ></rect>
+
+      <rect
+        x="-6000"
+        y="743"
+        width="13600"
+        height="4000"
+        fill="url(#floorTone)"
+        aria-hidden="true"
+      ></rect>
+
+
+      <!-- <use> reuses the live figure, bubbles and ending text for the cast shadow.
+           Because it references the same SVG groups, the shadow changes automatically
+           when the interaction changes them.
+
+           MDN:
+           https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/use
+      -->
+
+      <g
+        mask="url(#shadowFade)"
+        aria-hidden="true"
+      >
+
+        <g
+          class="cast-shadow"
+          filter="url(#flatShadow)"
+        >
+
+          <use
+            href="#figure"
+            transform="translate(800 800) matrix(1 0 1.05 -0.17 0 0) scale(1.5)"
+          ></use>
+
+          <use
+            href="#burden"
+            transform="translate(800 800) matrix(1 0 1.05 -0.17 0 0) translate(-800 -800)"
+          ></use>
+
+          <use
+            href="#endWords"
+            transform="translate(800 800) matrix(1 0 1.05 -0.17 0 0) translate(-800 -800)"
+          ></use>
+
+        </g>
+
+      </g>
+
+
+      <g
+        id="carrier"
+        transform="translate(800 800) scale(1.5)"
+        aria-hidden="true"
+      >
+        <g id="figure" class="silhouette"></g>
+      </g>
+
+
+      <g
+        id="burden"
+        aria-hidden="true"
+      ></g>
+
+
+      <g
+        id="effects"
+        aria-hidden="true"
+      ></g>
+
+
+      <g
+        id="endWords"
+        class="ending-words"
+        filter="url(#fingers)"
+        role="img"
+        aria-label="someone always carries the weight."
+      ></g>
+
+
+      <g
+        id="title"
+        class="ending-words"
+        opacity="0"
+        role="img"
+        aria-label="The Weight Of Words"
+      >
+
+        <g filter="url(#marker)">
+
+          <text
+            id="titleText"
+            x="0"
+            y="0"
+            text-anchor="middle"
+            aria-hidden="true"
+          >
+            THE WEIGHT OF WORDS
+          </text>
+
+        </g>
+
+      </g>
+
+    </svg>
+
+
+    <p
+      class="hint is-hidden"
+      id="hint"
+    >
+      click to ease the weight
+    </p>
+
+  </main>
+
+
+  <script
+    src="script.js"
+    defer
+  ></script>
+
+</body>
+</html>
