@@ -559,9 +559,14 @@
       ></rect>
 
 
-      <!-- <use> reuses the live figure, bubbles and ending text for the cast shadow.
+      <!-- <use> reuses the live figure and ending text for the cast shadow.
            Because it references the same SVG groups, the shadow changes automatically
            when the interaction changes them.
+
+           The bubbles are not reused here: flatShadow only keeps their solid outline,
+           so #burdenShadow holds plain circle and tail copies instead. Reusing the
+           real bubbles would run their grain filter a second time every frame, which
+           is very slow in Safari.
 
            MDN:
            https://developer.mozilla.org/en-US/docs/Web/SVG/Reference/Element/use
@@ -582,10 +587,10 @@
             transform="translate(800 800) matrix(1 0 1.05 -0.17 0 0) scale(1.5)"
           ></use>
 
-          <use
-            href="#burden"
+          <g
+            id="burdenShadow"
             transform="translate(800 800) matrix(1 0 1.05 -0.17 0 0) translate(-800 -800)"
-          ></use>
+          ></g>
 
           <use
             href="#endWords"

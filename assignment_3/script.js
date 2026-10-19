@@ -128,10 +128,18 @@ function makeBubble(parent, extraClass, phrases, darkness = 0.5) {
     )
   );
 
+  // Each bubble gets its own copy of the grain filter so the filter region can
+  // follow the circle. The default region is based on the bounding box, which
+  // also includes the long hidden text lines and is several times wider.
+  const grain = document.getElementById('bubbleGrain').cloneNode(true);
+  grain.id = `${id}Grain`;
+  grain.setAttribute('filterUnits', 'userSpaceOnUse');
+  defs.appendChild(grain);
+
   const skin = svgEl(
     'g',
     {
-      filter: 'url(#bubbleGrain)',
+      filter: `url(#${grain.id})`,
     },
     g
   );
@@ -240,6 +248,10 @@ function makeBubble(parent, extraClass, phrases, darkness = 0.5) {
     scraps.push(t);
   }
 
+  const shade = svgEl('g', {}, burdenShadow);
+  const shadeTail = svgEl('path', {}, shade);
+  const shadeBody = svgEl('circle', {}, shade);
+
   return {
     g,
     tail,
@@ -247,6 +259,10 @@ function makeBubble(parent, extraClass, phrases, darkness = 0.5) {
     stops,
     pile,
     scraps,
+    grain,
+    shade,
+    shadeTail,
+    shadeBody,
   };
 }
 
@@ -328,6 +344,16 @@ function drawBubble(b, cx, cy, r, fill, tailAngle) {
   b.body.setAttribute('cx', cx.toFixed(1));
   b.body.setAttribute('cy', cy.toFixed(1));
   b.body.setAttribute('r', radius.toFixed(1));
+  b.shadeBody.setAttribute('cx', cx.toFixed(1));
+  b.shadeBody.setAttribute('cy', cy.toFixed(1));
+  b.shadeBody.setAttribute('r', radius.toFixed(1));
+
+  // The tail reaches 1.22 × radius; the extra margin keeps the grainy edge.
+  const pad = radius * 1.3 + 12;
+  b.grain.setAttribute('x', (cx - pad).toFixed(1));
+  b.grain.setAttribute('y', (cy - pad).toFixed(1));
+  b.grain.setAttribute('width', (pad * 2).toFixed(1));
+  b.grain.setAttribute('height', (pad * 2).toFixed(1));
   const spread = 0.4;
 
   const pt = (angle, dist) =>
@@ -343,6 +369,8 @@ function drawBubble(b, cx, cy, r, fill, tailAngle) {
     L${pt(tailAngle + spread * 0.2, radius * 0.9)}
     Z`
   );
+
+  b.shadeTail.setAttribute('d', b.tail.getAttribute('d'));
 
   b.tail.setAttribute('fill', fill);
 
@@ -995,6 +1023,8 @@ function drawFigure(time, dt, carrying, held) {
 
 const burden = document.getElementById('burden');
 
+const burdenShadow = document.getElementById('burdenShadow');
+
 const effects = document.getElementById('effects');
 
 const ending = {
@@ -1386,6 +1416,7 @@ for (let k = scene.words.length - 1; k >= 0; k--) {
   word.phrases = SAYINGS[SAYINGS.length - 1 - word.rank];
   word.view = makeBubble(burden, '', word.phrases, word.d0);
   word.view.g.style.display = 'none';
+  word.view.shade.style.display = 'none';
   word.view.g.addEventListener('click', () => lighten(word));
 }
 
@@ -1800,6 +1831,7 @@ function update(dt, time) {
       word.y = targetY - 1300;
       word.fromY = word.y;
       word.view.g.style.display = '';
+      word.view.shade.style.display = '';
     }
 
     if (!word.landed) {
@@ -1864,6 +1896,7 @@ function update(dt, time) {
         shock(word, radius);
         word.gone = true;
         word.view.g.remove();
+        word.view.shade.remove();
 
         continue;
       }
@@ -1872,13 +1905,12 @@ function update(dt, time) {
     const scaleX = 1 + wobble;
     const scaleY = 1 - wobble;
 
-    word.view.g.setAttribute(
-      'transform',
-
-      `translate(${word.x.toFixed(1)} ${word.y.toFixed(1)})
+    const squashTransform = `translate(${word.x.toFixed(1)} ${word.y.toFixed(1)})
          scale(${scaleX.toFixed(4)} ${scaleY.toFixed(4)})
-         translate(${(-word.x).toFixed(1)} ${(-word.y).toFixed(1)})`
-    );
+         translate(${(-word.x).toFixed(1)} ${(-word.y).toFixed(1)})`;
+
+    word.view.g.setAttribute('transform', squashTransform);
+    word.view.shade.setAttribute('transform', squashTransform);
 
     word.view.g.setAttribute('opacity', opacity.toFixed(3));
     drawBubble(word.view, word.x, word.y, radius, colour, word.tail);
